@@ -7,7 +7,7 @@ from app.schemas import CustomerData
 app = FastAPI(title="Churn Prediction API")
 
 # Modeli yükle
-model_data = joblib.load("model/churn_model.pkl")
+model_data = joblib.load("models/churn_pipeline.joblib")
 model = model_data["model"]
 feature_columns = model_data["columns"]
 
