@@ -6,8 +6,8 @@ from app.schemas import CustomerData
 
 app = FastAPI(
     title="Churn Prediction API",
-    description="Customer Churn Prediction using Scikit-learn Pipeline",
-    version="1.0.0"
+    version="1.0.0",
+    description="Customer Churn Prediction API"
 )
 
 # Eğitilmiş pipeline'ı yükle
@@ -30,14 +30,11 @@ def health():
 
 @app.post("/predict")
 def predict(data: CustomerData):
-    """
-    Customer churn prediction
-    """
 
-    # Pydantic modelini DataFrame'e dönüştür
+    # İstek verisini DataFrame'e çevir
     input_df = pd.DataFrame([data.model_dump()])
 
-    # Pipeline tahmini
+    # Tahmin
     prediction = model.predict(input_df)[0]
 
     # Olasılık
