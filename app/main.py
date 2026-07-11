@@ -4,46 +4,47 @@ import joblib
 
 from app.schemas import CustomerData
 
-app = FastAPI(title="Churn Prediction API")
+app = FastAPI(
+    title="Churn Prediction API",
+    description="Customer Churn Prediction using Scikit-learn Pipeline",
+    version="1.0.0"
+)
 
-# Modeli yükle
-model_data = joblib.load("models/churn_pipeline.joblib")
-model = model_data["model"]
-feature_columns = model_data["columns"]
+# Eğitilmiş pipeline'ı yükle
+model = joblib.load("models/churn_pipeline.joblib")
 
 
 @app.get("/")
 def home():
-    return {"message": "Churn Prediction API çalışıyor"}
+    return {
+        "message": "Churn Prediction API is running!"
+    }
 
 
 @app.get("/health")
-def health_check():
-    return {"status": "ok"}
+def health():
+    return {
+        "status": "healthy"
+    }
 
 
 @app.post("/predict")
 def predict(data: CustomerData):
-    # Gelen veriyi dict'e çevir
-    input_dict = data.model_dump()
+    """
+    Customer churn prediction
+    """
 
-    # DataFrame'e dönüştür
-    input_df = pd.DataFrame([input_dict])
+    # Pydantic modelini DataFrame'e dönüştür
+    input_df = pd.DataFrame([data.model_dump()])
 
-    # One-hot encoding
-    input_df = pd.get_dummies(input_df)
-
-    # Eğitimdeki kolonlarla hizala
-    input_df = input_df.reindex(columns=feature_columns, fill_value=0)
-
-    # Tahmin
+    # Pipeline tahmini
     prediction = model.predict(input_df)[0]
-    probability = model.predict_proba(input_df)[0][1]
 
-    label = "Churn" if int(prediction) == 1 else "No Churn"
+    # Olasılık
+    probability = model.predict_proba(input_df)[0][1]
 
     return {
         "prediction": int(prediction),
-        "prediction_label": label,
+        "prediction_label": "Churn" if prediction == 1 else "No Churn",
         "churn_probability": round(float(probability), 4)
     }
