@@ -1,0 +1,23 @@
+
+name: Churn CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Kodu indir
+        uses: actions/checkout@v4
+
+      - name: API Docker image oluştur
+        run: docker build -t churn-api -f Dockerfile .
+
+      - name: Streamlit Docker image oluştur
+        run: docker build -t churn-streamlit -f Dockerfile.streamlit .
+
