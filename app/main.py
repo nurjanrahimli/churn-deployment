@@ -1,3 +1,5 @@
+from datetime import datetime
+import os
 from fastapi import FastAPI
 import pandas as pd
 import joblib
@@ -30,15 +32,23 @@ def health():
 
 @app.post("/predict")
 def predict(data: CustomerData):
-
     input_df = pd.DataFrame([data.model_dump()])
 
-    print("Gelen kolonlar:")
-    print(input_df.columns.tolist())
-
-    print("Model beklediği kolonlar:")
-    print(model.feature_names_in_)
-
     prediction = model.predict(input_df)[0]
+    probability = model.predict_proba(input_df)[0][1]
 
-    return {"prediction": int(prediction)}
+    log_line = (
+        f"{datetime.now()} | "
+        f"Prediction={prediction} | "
+        f"Probability={probability:.4f}\n"
+    )
+
+    with open("prediction_logs.txt", "a") as f:
+        f.write(log_line)
+
+    return {
+        "prediction": int(prediction),
+        "prediction_label": "Churn" if prediction == 1 else "No Churn",
+        "churn_probability": round(float(probability), 4)
+    }
+
